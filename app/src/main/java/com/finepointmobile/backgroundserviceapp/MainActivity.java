@@ -6,8 +6,8 @@ import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,23 +28,38 @@ public class MainActivity extends AppCompatActivity {
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, BackgroundGPSService.class);
-                intent.putExtra("receiver", "hello-everyone!");
-                startService(intent);
+                oldStartService();
             }
         });
 
         setupServiceReceiver();
     }
 
+    public void oldStartService() {
+        Intent intent = new Intent(this, BackgroundGPSService.class);
+        intent.putExtra("receiver", mReceiver);
+        startService(intent);
+    }
+
+
+    public void onStartService() {
+        Intent i = new Intent(this, BackgroundGPSService.class);
+        i.putExtra("foo", "bar");
+        i.putExtra("receiver", mReceiver);
+        startService(i);
+    }
+
+    // Setup the callback for when data is received from the service
     public void setupServiceReceiver() {
         mReceiver = new GPSResultReceiver(new Handler());
-
+        // This is where we specify what happens when data is received from the service
         mReceiver.setReceiver(new GPSResultReceiver.Receiver() {
             @Override
             public void onReceiveResult(int resultCode, Bundle resultData) {
-                Log.d(TAG, "onReceiveResult: resultCode: " + resultCode);
-                Log.d(TAG, "onReceiveResult: resultdata: " + resultData);
+                if (resultCode == RESULT_OK) {
+                    String resultValue = resultData.getString("resultValue");
+                    Toast.makeText(MainActivity.this, resultValue, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
